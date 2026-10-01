@@ -1,6 +1,21 @@
-variable "tenancy_id" {
+variable "tenancy_ocid" {
   type        = string
   description = "The tenancy to create the resources in"
+}
+
+variable "user_ocid" {
+  type        = string
+  description = "The user to create the resources in"
+}
+
+variable "private_key_path" {
+  type        = string
+  description = "The private key path to create the resources in"
+}
+
+variable "fingerprint" {
+  type        = string
+  description = "The fingerprint to create the resources in"
 }
 
 variable "region" {
