@@ -25,7 +25,12 @@ variable "region" {
   default = "ap-sydney-1"
 }
 
-variable "compartment_id" {
+variable "root_compartment_ocid" {
   type        = string
-  description = "The compartment to create the resources in"
+  description = "The root compartment to create the resources in"
+}
+
+variable "infra_compartment_name" {
+  type        = string
+  description = "The infra compartment to create the resources in"
 }
