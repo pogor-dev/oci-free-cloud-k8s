@@ -1,0 +1,12 @@
+{
+    "folders": [
+        {
+            "name": "opentofu",
+            "path": "opentofu"
+        },
+        {
+            "name": "root",
+            "path": "."
+        }
+    ]
+}
