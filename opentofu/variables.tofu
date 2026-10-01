@@ -39,8 +39,3 @@ variable "region" {
 
   default = "ap-sydney-1"
 }
-
-variable "root_compartment_ocid" {
-  type        = string
-  description = "The root compartment to create the resources in"
-}
