@@ -1,3 +1,18 @@
+variable "env" {
+  type        = string
+  description = "The environment to create the resources in"
+}
+
+variable "org" {
+  type        = string
+  description = "The organization to create the resources in"
+}
+
+variable "project" {
+  type        = string
+  description = "The project to create the resources in"
+}
+
 variable "tenancy_ocid" {
   type        = string
   description = "The tenancy to create the resources in"
@@ -28,9 +43,4 @@ variable "region" {
 variable "root_compartment_ocid" {
   type        = string
   description = "The root compartment to create the resources in"
-}
-
-variable "infra_compartment_name" {
-  type        = string
-  description = "The infra compartment to create the resources in"
 }
