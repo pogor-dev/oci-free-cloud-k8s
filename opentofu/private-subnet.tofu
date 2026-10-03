@@ -1,9 +1,15 @@
+locals {
+  private_subnet_cidr = "10.0.1.0/24"
+}
+
 resource "oci_core_subnet" "vcn-private-subnet" {
 
   # Required
   compartment_id = oci_identity_compartment.infra-compartment.id
   vcn_id         = module.vcn.vcn_id
-  cidr_block     = "10.0.1.0/24"
+  cidr_block     = local.private_subnet_cidr
+
+  prohibit_public_ip_on_vnic = true
 
   # Optional
   # Caution: For the route table id, use module.vcn.nat_route_id.

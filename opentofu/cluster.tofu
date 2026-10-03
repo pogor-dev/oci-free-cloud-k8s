@@ -7,6 +7,12 @@ resource "oci_containerengine_cluster" "oke-cluster" {
   name               = "oke-cluster-${var.org}-${var.project}-${var.env}"
   vcn_id             = module.vcn.vcn_id
 
+  # Create the Kubernetes API directly in the VCN, without a public IP.
+  endpoint_config {
+    subnet_id            = oci_core_subnet.vcn-private-subnet.id
+    is_public_ip_enabled = false
+  }
+
   # Optional
   options {
     kubernetes_network_config {

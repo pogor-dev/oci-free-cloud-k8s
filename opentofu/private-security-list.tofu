@@ -47,4 +47,22 @@ resource "oci_core_security_list" "private-security-list" {
       type = 3
     }
   }
+
+  ingress_security_rules {
+    description = "Control plane, workers, and inter-node pod traffic in the shared subnet"
+    source      = local.private_subnet_cidr
+    protocol    = "all"
+    stateless   = false
+  }
+
+  ingress_security_rules {
+    description = "Client access to the private Kubernetes API"
+    source      = var.vcn_cidr
+    protocol    = "6"
+    stateless   = false
+    tcp_options {
+      min = 6443
+      max = 6443
+    }
+  }
 }
