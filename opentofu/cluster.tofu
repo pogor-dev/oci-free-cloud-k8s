@@ -1,14 +1,18 @@
-# resource "oci_containerengine_cluster" "oke-cluster" {
-#   compartment_id     = oci_identity_compartment.infra-compartment.id
-#   kubernetes_version = "v1.36"
-#   name               = "<your-cluster-name>"
-#   vcn_id             = module.vcn.vcn_id
+# Source from https://search.opentofu.org/provider/opentofu/oci/latest/docs/resources/containerengine_cluster
 
-#   options {
-#     kubernetes_network_config {
-#       pods_cidr     = "10.244.0.0/16"
-#       services_cidr = "10.96.0.0/16"
-#     }
-#     service_lb_subnet_ids = [oci_core_subnet.vcn-public-subnet.id]
-#   }
-# }
+resource "oci_containerengine_cluster" "oke-cluster" {
+  # Required
+  compartment_id     = oci_identity_compartment.infra-compartment.id
+  kubernetes_version = "v1.36.4"
+  name               = "oke-cluster-${var.org}-${var.project}-${var.env}"
+  vcn_id             = module.vcn.vcn_id
+
+  # Optional
+  options {
+    kubernetes_network_config {
+      pods_cidr     = "10.244.0.0/16"
+      services_cidr = "10.96.0.0/16"
+    }
+    service_lb_subnet_ids = [oci_core_subnet.vcn-public-subnet.id]
+  }
+}

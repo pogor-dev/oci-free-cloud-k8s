@@ -45,3 +45,10 @@ variable "vcn_cidr" {
   type        = string
   default     = "10.0.0.0/16"
 }
+
+variable "compute_node_image_ocid" {
+  description = "OCID of the image to use for the compute node. Use Oracle Linux 9.x for Always Free tier. See https://docs.oracle.com/en-us/iaas/images/oke-worker-node-oracle-linux-9x/index.htm for more details."
+  type        = string
+  # TODO: Dynamically get the latest Oracle Linux 9.x image OCID for the region. For now, we will use a hardcoded value.
+  default = "ocid1.image.oc1.ap-sydney-1.aaaaaaaauur44aztesxrdnt625ux6xguekeh3ohm4sawngprxeojmdy7kpaq"
+}
