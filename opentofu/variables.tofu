@@ -39,3 +39,9 @@ variable "region" {
 
   default = "ap-sydney-1"
 }
+
+variable "vcn_cidr" {
+  description = "CIDR block for the VCN"
+  type        = string
+  default     = "10.0.0.0/16"
+}
