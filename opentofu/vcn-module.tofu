@@ -7,9 +7,9 @@ module "vcn" {
   compartment_id = oci_identity_compartment.infra-compartment.id
   region         = var.region
 
-  create_internet_gateway  = false
-  create_nat_gateway       = false
-  create_service_gateway   = false
+  create_internet_gateway  = true
+  create_nat_gateway       = true
+  create_service_gateway   = true
   lockdown_default_seclist = true # We define custom VCN Security List
 
   vcn_dns_label = "vcnmodule"
