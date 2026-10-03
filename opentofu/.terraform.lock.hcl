@@ -36,8 +36,7 @@ provider "registry.opentofu.org/opentofu/oci" {
 }
 
 provider "registry.opentofu.org/oracle/oci" {
-  version     = "9.8.0"
-  constraints = ">= 4.67.3, >= 8.14.0"
+  version = "9.8.0"
   hashes = [
     "h1:+7FR7zuXJq0g8wODvaz1mjUcDlWt+Coo7dN1ZehxGzQ=",
     "h1:4L/7VWd3kn9ofhvxpyfjlVsofdV7yF8SUzTne2sSpNc=",
