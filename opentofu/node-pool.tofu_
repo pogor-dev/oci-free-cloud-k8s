@@ -9,7 +9,7 @@ resource "oci_containerengine_node_pool" "oke-node-pool" {
   node_config_details {
     placement_configs {
       availability_domain = data.oci_identity_availability_domains.tenancy.availability_domains[0].name
-      subnet_id           = oci_core_subnet.vcn-private-subnet.id
+      subnet_id           = oci_core_subnet.vcn-node-subnet.id
     }
     size = 2 # For the free tier, the maximum number of worker nodes is 2. See https://www.oracle.com/cloud/free/ for more information.
   }

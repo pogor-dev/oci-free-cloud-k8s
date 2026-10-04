@@ -3,7 +3,7 @@ locals {
   api_subnet_cidr     = "10.0.0.0/28"
 }
 
-resource "oci_core_subnet" "vcn-private-subnet" {
+resource "oci_core_subnet" "vcn-node-subnet" {
 
   # Required
   compartment_id = oci_identity_compartment.infra-compartment.id
@@ -21,7 +21,7 @@ resource "oci_core_subnet" "vcn-private-subnet" {
   display_name      = "node-subnet-${var.org}-${var.project}-${var.env}"
 }
 
-resource "oci_core_subnet" "vcn-api-subnet" {
+resource "oci_core_subnet" "vcn-k8s-api-endpoint-subnet" {
 
   # Required
   compartment_id = oci_identity_compartment.infra-compartment.id
@@ -37,7 +37,7 @@ resource "oci_core_subnet" "vcn-api-subnet" {
   display_name      = "k8s-api-endpoint-subnet-${var.org}-${var.project}-${var.env}"
 }
 
-resource "oci_core_subnet" "vcn-public-subnet" {
+resource "oci_core_subnet" "vcn-svc-lb-subnet" {
 
   # Required
   compartment_id = oci_identity_compartment.infra-compartment.id

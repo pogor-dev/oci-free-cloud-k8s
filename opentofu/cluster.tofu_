@@ -9,7 +9,7 @@ resource "oci_containerengine_cluster" "oke-cluster" {
 
   # Create the Kubernetes API directly in the VCN, without a public IP.
   endpoint_config {
-    subnet_id            = oci_core_subnet.vcn-api-subnet.id
+    subnet_id            = oci_core_subnet.vcn-k8s-api-endpoint-subnet.id
     is_public_ip_enabled = false
   }
 
@@ -19,6 +19,6 @@ resource "oci_containerengine_cluster" "oke-cluster" {
       pods_cidr     = "10.244.0.0/16"
       services_cidr = "10.96.0.0/16"
     }
-    service_lb_subnet_ids = [oci_core_subnet.vcn-public-subnet.id]
+    service_lb_subnet_ids = [oci_core_subnet.vcn-svc-lb-subnet.id]
   }
 }
