@@ -11,5 +11,5 @@ resource "oci_core_subnet" "vcn-public-subnet" {
   dns_label         = "loadbalancers"
   route_table_id    = module.vcn.ig_route_id
   security_list_ids = [oci_core_security_list.public-security-list.id]
-  display_name      = "public-subnet-${var.org}-${var.project}-${var.env}"
+  display_name      = "svc-lb-subnet-${var.org}-${var.project}-${var.env}"
 }

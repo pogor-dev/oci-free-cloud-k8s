@@ -17,5 +17,5 @@ resource "oci_core_subnet" "vcn-private-subnet" {
   # Do not use module.vcn.nat_gateway_id, because it is the OCID for the gateway and not the route table.
   route_table_id    = module.vcn.nat_route_id
   security_list_ids = [oci_core_security_list.private-security-list.id]
-  display_name      = "private-subnet-${var.org}-${var.project}-${var.env}"
+  display_name      = "node-subnet-${var.org}-${var.project}-${var.env}"
 }

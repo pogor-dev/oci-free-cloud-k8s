@@ -3,7 +3,28 @@
 Run commands from this directory. Authentication uses the provider variables in
 `production.tfvars`.
 
-## Private VCN-native API endpoint
+## Current subnet configuration
+
+The active subnet and security-list files follow the OKE reference network:
+
+| Purpose | CIDR | Routing | DNS label |
+| --- | --- | --- | --- |
+| Private API endpoint | `10.0.0.0/28` | NAT and service gateway | `api` |
+| Private workers | `10.0.10.0/24` | NAT and service gateway | `workers` |
+| Public load balancers | `10.0.20.0/24` | Internet gateway | `loadbalancers` |
+
+API and worker security lists mirror the reference rules. The public
+load-balancer security list starts empty. OCI service CIDRs are discovered for
+the configured region. Each subnet uses its own security list.
+
+Cluster, node-pool, and output files ending in `.tofu_` remain inactive. The
+inactive cluster definition references the dedicated API subnet for future use.
+The configuration changes do not deploy resources until `tofu apply` is run.
+
+## Historical private VCN-native API endpoint migration
+
+The following notes describe the earlier shared-subnet deployment, not the
+current subnet configuration above.
 
 The cluster is created with its Kubernetes API endpoint sharing the existing
 regional private worker subnet (`10.0.1.0/24`), with no public IP. The subnet uses the existing NAT

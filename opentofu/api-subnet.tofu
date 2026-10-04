@@ -15,5 +15,5 @@ resource "oci_core_subnet" "vcn-api-subnet" {
   dns_label         = "api"
   route_table_id    = module.vcn.nat_route_id
   security_list_ids = [oci_core_security_list.api-security-list.id]
-  display_name      = "api-subnet-${var.org}-${var.project}-${var.env}"
+  display_name      = "k8s-api-endpoint-subnet-${var.org}-${var.project}-${var.env}"
 }
