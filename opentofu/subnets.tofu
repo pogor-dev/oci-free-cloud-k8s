@@ -17,7 +17,7 @@ resource "oci_core_subnet" "vcn-node-subnet" {
   # Caution: For the route table id, use module.vcn.nat_route_id.
   # Do not use module.vcn.nat_gateway_id, because it is the OCID for the gateway and not the route table.
   route_table_id    = module.vcn.nat_route_id
-  security_list_ids = [oci_core_security_list.private-security-list.id]
+  security_list_ids = [oci_core_security_list.node-security-list.id]
   display_name      = "node-subnet-${var.org}-${var.project}-${var.env}"
 }
 
@@ -33,7 +33,7 @@ resource "oci_core_subnet" "vcn-k8s-api-endpoint-subnet" {
   # Optional
   dns_label         = "api"
   route_table_id    = module.vcn.nat_route_id
-  security_list_ids = [oci_core_security_list.api-security-list.id]
+  security_list_ids = [oci_core_security_list.k8s-api-endpoint-security-list.id]
   display_name      = "k8s-api-endpoint-subnet-${var.org}-${var.project}-${var.env}"
 }
 
@@ -49,6 +49,6 @@ resource "oci_core_subnet" "vcn-svc-lb-subnet" {
   # Optional
   dns_label         = "loadbalancers"
   route_table_id    = module.vcn.ig_route_id
-  security_list_ids = [oci_core_security_list.public-security-list.id]
+  security_list_ids = [oci_core_security_list.svc-lb-security-list.id]
   display_name      = "svc-lb-subnet-${var.org}-${var.project}-${var.env}"
 }

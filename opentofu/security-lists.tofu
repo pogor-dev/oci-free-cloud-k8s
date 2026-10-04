@@ -6,10 +6,10 @@ data "oci_core_services" "all-oci-services" {
   }
 }
 
-resource "oci_core_security_list" "private-security-list" {
+resource "oci_core_security_list" "node-security-list" {
   compartment_id = oci_identity_compartment.infra-compartment.id
   vcn_id         = module.vcn.vcn_id
-  display_name   = "private-security-list-${var.org}-${var.project}-${var.env}"
+  display_name   = "node-security-list-${var.org}-${var.project}-${var.env}"
 
   egress_security_rules {
     description      = "Allow pods on one worker node to communicate with pods on other worker nodes"
@@ -146,10 +146,10 @@ resource "oci_core_security_list" "private-security-list" {
   }
 }
 
-resource "oci_core_security_list" "api-security-list" {
+resource "oci_core_security_list" "k8s-api-endpoint-security-list" {
   compartment_id = oci_identity_compartment.infra-compartment.id
   vcn_id         = module.vcn.vcn_id
-  display_name   = "api-security-list-${var.org}-${var.project}-${var.env}"
+  display_name   = "k8s-api-endpoint-security-list-${var.org}-${var.project}-${var.env}"
 
   egress_security_rules {
     description      = "Allow Kubernetes Control Plane to communicate with OKE"
@@ -247,10 +247,10 @@ resource "oci_core_security_list" "api-security-list" {
   }
 }
 
-resource "oci_core_security_list" "public-security-list" {
+resource "oci_core_security_list" "svc-lb-security-list" {
   compartment_id = oci_identity_compartment.infra-compartment.id
   vcn_id         = module.vcn.vcn_id
-  display_name   = "public-security-list-${var.org}-${var.project}-${var.env}"
+  display_name   = "svc-lb-security-list-${var.org}-${var.project}-${var.env}"
 
   # OKE reference load-balancer security list has no ingress or egress rules.
 }
