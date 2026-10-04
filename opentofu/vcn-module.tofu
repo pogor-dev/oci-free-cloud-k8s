@@ -12,6 +12,6 @@ module "vcn" {
   create_service_gateway   = true
   lockdown_default_seclist = true # We define custom VCN Security List
 
-  vcn_dns_label = "vcnmodule"
+  vcn_dns_label = lower("${var.org}${var.project}${var.env}")
   vcn_cidrs     = [var.vcn_cidr]
 }
