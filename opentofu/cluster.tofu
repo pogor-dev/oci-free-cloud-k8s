@@ -14,6 +14,12 @@ resource "oci_containerengine_cluster" "oke-cluster" {
   }
 
   # Optional
+  type = "BASIC_CLUSTER"
+
+  cluster_pod_network_options {
+    cni_type = "OCI_VCN_IP_NATIVE"
+  }
+
   options {
     kubernetes_network_config {
       pods_cidr     = "10.244.0.0/16"

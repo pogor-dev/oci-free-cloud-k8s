@@ -7,6 +7,12 @@ resource "oci_containerengine_node_pool" "oke-node-pool" {
   kubernetes_version = "v1.36.4"
   name               = "oke-node-pool-${var.org}-${var.project}-${var.env}"
   node_config_details {
+    node_pool_pod_network_option_details {
+      cni_type          = "OCI_VCN_IP_NATIVE"
+      max_pods_per_node = 31
+      pod_subnet_ids    = [oci_core_subnet.vcn-node-subnet.id]
+    }
+
     placement_configs {
       availability_domain = data.oci_identity_availability_domains.tenancy.availability_domains[0].name
       subnet_id           = oci_core_subnet.vcn-node-subnet.id
