@@ -1,3 +1,34 @@
+# Source from https://search.opentofu.org/provider/opentofu/oci/latest/docs/resources/containerengine_cluster
+
+resource "oci_containerengine_cluster" "oke-cluster" {
+  # Required
+  compartment_id     = oci_identity_compartment.infra-compartment.id
+  kubernetes_version = "v1.36.4"
+  name               = "oke-cluster-${var.org}-${var.project}-${var.env}"
+  vcn_id             = module.vcn.vcn_id
+
+  # Create the Kubernetes API directly in the VCN, without a public IP.
+  endpoint_config {
+    subnet_id            = oci_core_subnet.vcn-k8s-api-endpoint-subnet.id
+    is_public_ip_enabled = false
+  }
+
+  # Optional
+  type = "BASIC_CLUSTER"
+
+  cluster_pod_network_options {
+    cni_type = "OCI_VCN_IP_NATIVE"
+  }
+
+  options {
+    kubernetes_network_config {
+      pods_cidr     = "10.244.0.0/16"
+      services_cidr = "10.96.0.0/16"
+    }
+    service_lb_subnet_ids = [oci_core_subnet.vcn-svc-lb-subnet.id]
+  }
+}
+
 # Source from https://search.opentofu.org/provider/opentofu/oci/latest/docs/resources/containerengine_node_pool
 
 resource "oci_containerengine_node_pool" "oke-node-pool" {
