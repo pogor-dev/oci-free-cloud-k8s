@@ -6,17 +6,15 @@ terraform {
     }
   }
   backend "oci" {
+    # Terraform backends require literal values; -var-file does not configure them.
     # Required
-    bucket    = "object-storage-${var.org}-${var.project}-${var.env}"
-    namespace = var.object_storage_namespace
+    bucket    = "object-storage-shared-infra-prod"
+    namespace = "sdhy9ythd3tg"
 
     # Optional
-    tenancy_ocid     = var.tenancy_ocid
-    user_ocid        = var.user_ocid
-    fingerprint      = var.fingerprint
-    private_key_path = var.private_key_path
-    region           = var.region
-    key              = "terraform-state-${var.org}-${var.project}-${var.env}.tfstate"
+    config_file_profile = "DEFAULT"
+    region              = "ap-sydney-1"
+    key                 = "terraform-state-shared-infra-prod.tfstate"
   }
 
   required_version = ">= 1.12.0"
