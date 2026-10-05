@@ -52,3 +52,8 @@ variable "compute_node_image_ocid" {
   # TODO: Dynamically get the latest Oracle Linux 9.x image OCID for the region. For now, we will use a hardcoded value.
   default = "ocid1.image.oc1.ap-sydney-1.aaaaaaaauur44aztesxrdnt625ux6xguekeh3ohm4sawngprxeojmdy7kpaq"
 }
+
+variable "object_storage_namespace" {
+  description = "The object storage namespace to create the resources in"
+  type        = string
+}
