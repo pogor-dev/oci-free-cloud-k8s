@@ -62,7 +62,7 @@ resource "oci_containerengine_node_pool" "oke-node-pool" {
   node_source_details {
     image_id                = var.compute_node_image_ocid
     source_type             = "image"
-    boot_volume_size_in_gbs = 100 # For the free tier, the maximum boot volume size is up to 200 GB total. See https://www.oracle.com/cloud/free/ for more information.
+    boot_volume_size_in_gbs = 50
   }
 
   # Optional
