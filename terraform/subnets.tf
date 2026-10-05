@@ -1,6 +1,7 @@
 locals {
-  private_subnet_cidr = "10.0.10.0/24"
   api_subnet_cidr     = "10.0.0.0/28"
+  private_subnet_cidr = "10.0.10.0/24"
+  bastion_subnet_cidr = "10.0.30.0/28"
 }
 
 resource "oci_core_subnet" "vcn-node-subnet" {
@@ -35,6 +36,21 @@ resource "oci_core_subnet" "vcn-k8s-api-endpoint-subnet" {
   route_table_id    = module.vcn.nat_route_id
   security_list_ids = [oci_core_security_list.k8s-api-endpoint-security-list.id]
   display_name      = "k8s-api-endpoint-subnet-${var.org}-${var.project}-${var.env}"
+}
+
+resource "oci_core_subnet" "vcn-bastion-subnet" {
+  # Required
+  compartment_id = oci_identity_compartment.infra-compartment.id
+  vcn_id         = module.vcn.vcn_id
+  cidr_block     = local.bastion_subnet_cidr
+
+  prohibit_public_ip_on_vnic = true
+
+  # Optional
+  dns_label         = "bastion"
+  route_table_id    = module.vcn.nat_route_id
+  security_list_ids = [oci_core_security_list.bastion-security-list.id]
+  display_name      = "bastion-subnet-${var.org}-${var.project}-${var.env}"
 }
 
 resource "oci_core_subnet" "vcn-svc-lb-subnet" {

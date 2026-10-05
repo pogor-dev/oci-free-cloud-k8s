@@ -87,27 +87,115 @@ Destroying the stack removes the managed cluster and nodes. Recreating Always
 Free compute depends on available capacity. Preserve any workload data you need
 before destroying the stack.
 
-## Access the private API
+## Access the private API through Bastion
 
-API access is allowed from the VCN CIDR. Clients can run inside the VCN or use an
-OCI Bastion tunnel. Access from other networks requires both private connectivity
-and additional security rules.
+The Bastion configuration uses a dedicated private subnet (`10.0.30.0/28`),
+with stateful egress to the API subnet on TCP/6443. The existing API security
+list already allows TCP/6443 from `0.0.0.0/0`, which includes the Bastion subnet;
+no additional ingress rule is required. The API endpoint remains private.
 
-Generate a kubeconfig using an OCI CLI profile authorized for this cluster. The
-CLI does not automatically use Terraform provider credentials.
+`bastion_client_cidrs` in the ignored `production.tfvars` allows the workstation's
+public IPv4 address (`123.243.57.69/32` when detected). Update this value and apply
+if your public IP changes. Bastion sessions last at most three hours and are
+created on demand, outside Terraform state.
+
+### Deploy when ready
+
+From this directory, review a fresh plan and apply it:
 
 ```sh
-oci ce cluster create-kubeconfig \
-  --cluster-id "$(terraform output -raw oke_cluster_id)" \
-  --region "$(terraform output -raw oke_region)" \
-  --file "$HOME/.kube/oke-private" \
-  --token-version 2.0.0 \
-  --kube-endpoint PRIVATE_ENDPOINT
-kubectl --kubeconfig "$HOME/.kube/oke-private" get nodes
+terraform plan -var-file=production.tfvars -out=bastion.tfplan
+terraform apply bastion.tfplan
 ```
 
-Run the connectivity check from a host with private network access. A bastion
-tunnel also requires configuring the kubeconfig to use that tunnel.
-`terraform output oke_endpoints` shows the assigned endpoint addresses.
+Your OCI CLI identity must have permission to use the cluster and Bastion and
+manage Bastion sessions. This configuration does not create IAM grants. It uses
+the existing administrator access; other users need suitable policies.
 
-See Oracle's [network configuration guide](https://docs.oracle.com/en-us/iaas/Content/ContEng/Concepts/contengnetworkconfig.htm).
+### Create a session
+
+Use an SSH authentication key pair (not the OCI API signing key). Generate a
+dedicated key if needed, choosing a new filename to avoid replacing an existing key:
+
+```sh
+ssh-keygen -t rsa -b 3072 -f "$HOME/.ssh/oke-bastion"
+```
+
+Set the connection values and request a session:
+
+```sh
+oke_region=$(terraform output -raw oke_region)
+oke_cluster_id=$(terraform output -raw oke_cluster_id)
+oke_bastion_id=$(terraform output -raw bastion_id)
+oke_endpoint=$(terraform output -raw oke_private_endpoint)
+oke_api_ip=${oke_endpoint%:*}
+oke_key="$HOME/.ssh/oke-bastion"
+
+oke_session_id=$(oci bastion session create-port-forwarding \
+  --region "$oke_region" \
+  --bastion-id "$oke_bastion_id" \
+  --ssh-public-key-file "$oke_key.pub" \
+  --target-private-ip "$oke_api_ip" \
+  --target-port 6443 \
+  --session-ttl 10800 \
+  --query 'data.id' --raw-output)
+
+oci bastion session get --region "$oke_region" --session-id "$oke_session_id" \
+  --query 'data."lifecycle-state"' --raw-output
+```
+
+Repeat the last command until the session is `ACTIVE`. Obtain its SSH command:
+
+```sh
+oci bastion session get --region "$oke_region" --session-id "$oke_session_id" \
+  --query 'data."ssh-metadata".command' --raw-output
+```
+
+In the returned command, replace the private-key placeholder with the path to
+`oke-bastion`, and replace the local-port placeholder with `127.0.0.1:16443`.
+Keep the returned session host and target address. Add
+`-o ExitOnForwardFailure=yes -o ServerAliveInterval=30` to `ssh` and run it in a
+separate terminal. Keep the tunnel in the foreground; Ctrl-C closes it.
+
+### Configure kubectl
+
+Use a dedicated kubeconfig, preserving your default configuration. The following
+refuses to overwrite an existing file; choose another filename if needed:
+
+```sh
+oke_kubeconfig="$HOME/.kube/oke-bastion"
+if [ -e "$oke_kubeconfig" ]; then
+  echo "Choose a new kubeconfig filename; this one already exists."
+else
+  oci ce cluster create-kubeconfig \
+    --cluster-id "$oke_cluster_id" \
+    --region "$oke_region" \
+    --file "$oke_kubeconfig" \
+    --token-version 2.0.0 \
+    --kube-endpoint PRIVATE_ENDPOINT
+
+  oke_context_cluster=$(kubectl --kubeconfig "$oke_kubeconfig" config view \
+    --minify -o jsonpath='{.contexts[0].context.cluster}')
+  kubectl --kubeconfig "$oke_kubeconfig" config set-cluster "$oke_context_cluster" \
+    --server=https://127.0.0.1:16443 \
+    --tls-server-name="$oke_api_ip"
+fi
+```
+
+TLS verification still uses the cluster CA and original API IP. Do not disable
+certificate verification. With the tunnel running:
+
+```sh
+kubectl --kubeconfig "$oke_kubeconfig" get nodes
+```
+
+When finished, close the tunnel and optionally delete the session:
+
+```sh
+oci bastion session delete --region "$oke_region" --session-id "$oke_session_id"
+```
+
+For subsequent connections, create a new session and open its tunnel. Existing
+kubeconfig settings remain usable while the cluster endpoint is unchanged.
+
+Reference: [Oracle: Setting Up a Bastion for Cluster Access](https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengsettingupbastion.htm).

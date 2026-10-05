@@ -57,3 +57,13 @@ variable "object_storage_namespace" {
   description = "The object storage namespace to create the resources in"
   type        = string
 }
+
+variable "bastion_client_cidrs" {
+  description = "Public IPv4 CIDRs allowed to connect to Bastion sessions."
+  type        = list(string)
+
+  validation {
+    condition     = length(var.bastion_client_cidrs) > 0 && alltrue([for cidr in var.bastion_client_cidrs : can(cidrnetmask(cidr)) && cidr != "0.0.0.0/0"])
+    error_message = "Provide explicit IPv4 client CIDRs, not unrestricted Internet access."
+  }
+}

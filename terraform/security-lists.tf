@@ -247,6 +247,26 @@ resource "oci_core_security_list" "k8s-api-endpoint-security-list" {
   }
 }
 
+resource "oci_core_security_list" "bastion-security-list" {
+  compartment_id = oci_identity_compartment.infra-compartment.id
+  vcn_id         = module.vcn.vcn_id
+  display_name   = "bastion-security-list-${var.org}-${var.project}-${var.env}"
+
+  egress_security_rules {
+    description      = "Allow bastion to Kubernetes API endpoint communication"
+    stateless        = false
+    destination      = local.api_subnet_cidr
+    destination_type = "CIDR_BLOCK"
+    # Get protocol numbers from https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml TCP is 6
+    protocol = "6"
+
+    tcp_options {
+      min = 6443
+      max = 6443
+    }
+  }
+}
+
 resource "oci_core_security_list" "svc-lb-security-list" {
   compartment_id = oci_identity_compartment.infra-compartment.id
   vcn_id         = module.vcn.vcn_id
