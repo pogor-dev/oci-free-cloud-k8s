@@ -1,12 +1,17 @@
 {
     "folders": [
         {
-            "name": "opentofu",
-            "path": "opentofu"
+            "name": "terraform",
+            "path": "terraform"
         },
         {
             "name": "root",
             "path": "."
         }
-    ]
+    ],
+    "settings": {
+        "files.associations": {
+            "*.tf": "terraform"
+        }
+    }
 }

@@ -1,7 +1,33 @@
-# OpenTofu project
+# Terraform project
 
 Run commands from this directory. Authentication uses the provider variables in
 `production.tfvars`.
+
+## Initialize the OCI backend
+
+Use Terraform >= 1.12.0 with the `oracle/oci` provider. Run commands from this
+`terraform/` directory. Backend settings are literal values in `versions.tf` because
+Terraform backend blocks cannot reference variables. Backend authentication uses
+the `DEFAULT` profile in `~/.oci/config`. Provider authentication continues to use
+`production.tfvars`. Ensure both credentials refer to the intended tenancy.
+
+All existing backups and `.tfvars` were preserved. The active local state uses
+`registry.terraform.io/oracle/oci`; `terraform.tfstate.before-terraform.backup`
+preserves the exact pre-conversion state. Remote migration has not been performed.
+
+With no concurrent runs, migrate the local state to the existing OCI bucket:
+
+```sh
+terraform init -migrate-state
+terraform state list
+terraform plan -var-file=production.tfvars
+```
+
+Confirm the prompt to copy existing state. Keep local backups until the remote
+state and plan are verified. Use `-migrate-state`, not `-reconfigure`. For other
+environments update the backend settings or supply `-backend-config` overrides: `-var-file` does not set
+backend values. The native OCI backend supports locking and API signing-key
+authentication; no S3 Customer Secret Key is needed.
 
 ## Current subnet configuration
 
@@ -17,9 +43,9 @@ API and worker security lists mirror the reference rules. The public
 load-balancer security list starts empty. OCI service CIDRs are discovered for
 the configured region. Each subnet uses its own security list.
 
-Cluster, node-pool, and output files ending in `.tofu_` remain inactive. The
-inactive cluster definition references the dedicated API subnet for future use.
-The configuration changes do not deploy resources until `tofu apply` is run.
+Cluster and node-pool definitions are active in `oke.tf`. Files ending in
+`.tf_`, if present, are inactive.
+The configuration changes do not deploy resources until `terraform apply` is run.
 
 ## Historical private VCN-native API endpoint migration
 
@@ -39,22 +65,22 @@ until the new endpoint has been verified from a host with access to the VCN.
 The kubeconfig at `~/.kube/oke-private` targets the private endpoint; this
 workstation currently has no route to `10.0.1.213`.
 
-The migration was started through the OCI CLI, so refresh OpenTofu's local state
+The migration was started through the OCI CLI, so refresh Terraform's local state
 and inspect the plan before the next apply. Do not apply a plan that replaces
 the cluster.
 
 ```sh
-tofu plan -var-file=production.tfvars -out=create.tfplan
-tofu apply create.tfplan
+terraform plan -var-file=production.tfvars -out=create.tfplan
+terraform apply create.tfplan
 ```
 
 To destroy the existing managed stack and recreate it:
 
 ```sh
-tofu plan -destroy -var-file=production.tfvars -out=destroy.tfplan
-tofu apply destroy.tfplan
-tofu plan -var-file=production.tfvars -out=create.tfplan
-tofu apply create.tfplan
+terraform plan -destroy -var-file=production.tfvars -out=destroy.tfplan
+terraform apply destroy.tfplan
+terraform plan -var-file=production.tfvars -out=create.tfplan
+terraform apply create.tfplan
 ```
 
 Destroying the stack removes the managed cluster and nodes. Recreating Always
@@ -68,12 +94,12 @@ OCI Bastion tunnel. Access from other networks requires both private connectivit
 and additional security rules.
 
 Generate a kubeconfig using an OCI CLI profile authorized for this cluster. The
-CLI does not automatically use OpenTofu provider credentials.
+CLI does not automatically use Terraform provider credentials.
 
 ```sh
 oci ce cluster create-kubeconfig \
-  --cluster-id "$(tofu output -raw oke_cluster_id)" \
-  --region "$(tofu output -raw oke_region)" \
+  --cluster-id "$(terraform output -raw oke_cluster_id)" \
+  --region "$(terraform output -raw oke_region)" \
   --file "$HOME/.kube/oke-private" \
   --token-version 2.0.0 \
   --kube-endpoint PRIVATE_ENDPOINT
@@ -82,6 +108,6 @@ kubectl --kubeconfig "$HOME/.kube/oke-private" get nodes
 
 Run the connectivity check from a host with private network access. A bastion
 tunnel also requires configuring the kubeconfig to use that tunnel.
-`tofu output oke_endpoints` shows the assigned endpoint addresses.
+`terraform output oke_endpoints` shows the assigned endpoint addresses.
 
 See Oracle's [network configuration guide](https://docs.oracle.com/en-us/iaas/Content/ContEng/Concepts/contengnetworkconfig.htm).

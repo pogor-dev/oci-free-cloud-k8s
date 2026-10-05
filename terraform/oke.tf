@@ -1,4 +1,4 @@
-# Source from https://search.opentofu.org/provider/opentofu/oci/latest/docs/resources/containerengine_cluster
+# Source from https://registry.terraform.io/providers/oracle/oci/latest/docs/resources/containerengine_cluster
 
 resource "oci_containerengine_cluster" "oke-cluster" {
   # Required
@@ -29,7 +29,7 @@ resource "oci_containerengine_cluster" "oke-cluster" {
   }
 }
 
-# Source from https://search.opentofu.org/provider/opentofu/oci/latest/docs/resources/containerengine_node_pool
+# Source from https://registry.terraform.io/providers/oracle/oci/latest/docs/resources/containerengine_node_pool
 
 resource "oci_containerengine_node_pool" "oke-node-pool" {
   # Required
