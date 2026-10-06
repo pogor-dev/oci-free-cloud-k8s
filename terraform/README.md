@@ -121,7 +121,19 @@ dedicated key if needed, choosing a new filename to avoid replacing an existing 
 ssh-keygen -t rsa -b 3072 -f "$HOME/.ssh/oke-bastion"
 ```
 
-Set the connection values and request a session:
+The connection values below come from the root outputs in `outputs.tf`.
+`terraform output` reads saved state, so those outputs must first be applied.
+If the cluster and Bastion are already deployed but the outputs are missing,
+review and apply a refresh-only plan to save them without changing resources:
+
+```sh
+terraform plan -refresh-only -var-file=production.tfvars -out=outputs.tfplan
+terraform apply outputs.tfplan
+```
+
+Set the connection values from this `terraform/` directory, then request a
+session in the same shell. Set `oke_key` to your SSH **private** key path;
+the session command appends `.pub` to read its public key:
 
 ```sh
 oke_region=$(terraform output -raw oke_region)
@@ -139,23 +151,27 @@ oke_session_id=$(oci bastion session create-port-forwarding \
   --target-port 6443 \
   --session-ttl 10800 \
   --query 'data.id' --raw-output)
+```
 
+Check the session status, repeating until it is `ACTIVE`:
+
+```sh
 oci bastion session get --region "$oke_region" --session-id "$oke_session_id" \
   --query 'data."lifecycle-state"' --raw-output
 ```
 
-Repeat the last command until the session is `ACTIVE`. Obtain its SSH command:
+To connect to Bastion session, run this command:
 
 ```sh
-oci bastion session get --region "$oke_region" --session-id "$oke_session_id" \
-  --query 'data."ssh-metadata".command' --raw-output
+ssh -i "$oke_key" \
+  -N -L "6443:${oke_api_ip}:6443" \
+  -p 22 \
+  "${oke_session_id}@host.bastion.${oke_region}.oci.oraclecloud.com"
 ```
 
-In the returned command, replace the private-key placeholder with the path to
-`oke-bastion`, and replace the local-port placeholder with `127.0.0.1:16443`.
-Keep the returned session host and target address. Add
-`-o ExitOnForwardFailure=yes -o ServerAliveInterval=30` to `ssh` and run it in a
-separate terminal. Keep the tunnel in the foreground; Ctrl-C closes it.
+Run this in the shell where you set the variables, then use another terminal
+for kubectl (set its `oke_kubeconfig` variable there too). Local port `16443`
+matches the kubeconfig below; the remote API port remains `6443`.
 
 ### Configure kubectl
 
@@ -188,14 +204,3 @@ certificate verification. With the tunnel running:
 ```sh
 kubectl --kubeconfig "$oke_kubeconfig" get nodes
 ```
-
-When finished, close the tunnel and optionally delete the session:
-
-```sh
-oci bastion session delete --region "$oke_region" --session-id "$oke_session_id"
-```
-
-For subsequent connections, create a new session and open its tunnel. Existing
-kubeconfig settings remain usable while the cluster endpoint is unchanged.
-
-Reference: [Oracle: Setting Up a Bastion for Cluster Access](https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengsettingupbastion.htm).
